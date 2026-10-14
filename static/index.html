@@ -3,33 +3,33 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>خميعات لليوزرات</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#09090d;color:#fff;font-family:Arial,sans-serif;padding:25px 14px}
-.container{width:100%;max-width:850px;margin:35px auto;background:#14141c;border:1px solid #292936;border-radius:22px;padding:28px}
-header{text-align:center;margin-bottom:28px}
-h1{font-size:30px;margin:0 0 12px}
+body{margin:0;padding:20px 12px;background:#09090d;color:#fff;font-family:Arial,sans-serif}
+.container{max-width:800px;margin:25px auto;background:#14141c;border:1px solid #292936;border-radius:20px;padding:22px}
+header{text-align:center}
+h1{font-size:28px}
 p{color:#aaa;line-height:1.8}
-.badge{display:inline-block;background:#252532;color:#bbb;border-radius:20px;padding:8px 14px;font-size:12px}
-label{display:block;margin:18px 0 10px;font-weight:bold}
-select,button{font-size:16px;border-radius:12px;padding:14px;border:1px solid #333;background:#20202b;color:white;width:100%}
-.buttons{display:flex;gap:12px;margin-top:15px}
+.badge{display:inline-block;background:#252532;padding:8px 13px;border-radius:20px;font-size:12px}
+label{display:block;margin:22px 0 10px}
+select,button{width:100%;padding:13px;border-radius:11px;border:1px solid #333;background:#20202b;color:white;font-size:16px}
+.buttons{display:flex;gap:10px;margin-top:12px}
 button{cursor:pointer;font-weight:bold}
-.start{background:#fff;color:#111;border-color:#fff}
+.start{background:white;color:#111}
 .stop{background:#302029;color:#ff8c9b}
-.stats{display:flex;justify-content:space-between;gap:10px;margin:24px 0;color:#aaa}
+.stats{display:flex;justify-content:space-between;gap:10px;margin:22px 0;color:#bbb}
 #results{display:grid;gap:10px}
-.item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#20202a;padding:14px;border-radius:12px;direction:ltr}
-.username{font-weight:bold;font-size:18px;overflow-wrap:anywhere}
-.copy{width:auto;padding:9px 13px;font-size:13px}
-.status{font-size:12px;margin-top:5px;direction:rtl}
+.item{display:flex;align-items:center;justify-content:space-between;gap:10px;direction:ltr;background:#20202a;padding:12px;border-radius:12px}
+.username{font-size:17px;font-weight:bold;overflow-wrap:anywhere}
+.status{font-size:12px;margin-top:6px;direction:rtl}
 .good{color:#55e69a}
 .bad{color:#ff7185}
 .unknown{color:#ffce75}
-footer{text-align:center;color:#888;font-size:12px;margin-top:25px;line-height:1.8}
-@media(max-width:480px){.container{padding:18px;margin:12px auto}h1{font-size:25px}.buttons{gap:8px}.item{padding:10px}.username{font-size:16px}}
+.copy{width:auto;padding:9px 12px;font-size:13px}
+footer{font-size:12px;line-height:1.8;color:#999;text-align:center;margin-top:25px}
+@media(max-width:450px){.container{padding:16px}h1{font-size:24px}.buttons{gap:7px}}
 </style>
 </head>
 <body>
@@ -60,11 +60,11 @@ footer{text-align:center;color:#888;font-size:12px;margin-top:25px;line-height:1
 <div id="results"></div>
 
 <footer>
-✔️ الحساب موجود وفق بيانات صفحة تيك توك.
+✔️ الحساب ظهر في بيانات تيك توك.
 <br>
-❌ لم يتم تأكيد وجود الحساب، وهذا لا يعني أنه متاح.
+❌ لم يتأكد وجود الحساب، وهذا لا يعني أنه متاح.
 <br>
-⚠️ قد يمنع تيك توك الفحص؛ النتائج ليست ضمانًا للتوفر.
+قد يحدّ تيك توك من الطلبات؛ الفحص ليس ضمانًا للتوفر.
 </footer>
 </div>
 
@@ -103,9 +103,9 @@ async function checkUsername(name,status){
    status.textContent="❌ صيغة غير صحيحة";
   }else{
    status.className="status unknown";
-   status.textContent="⚠️ تعذّر التأكد من التوفر";
+   status.textContent="⚠️ تعذّر التأكد";
   }
- }catch(error){
+ }catch(e){
   status.className="status unknown";
   status.textContent="⚠️ تعذّر الاتصال بالفحص";
  }
@@ -114,8 +114,7 @@ async function checkUsername(name,status){
 function generate(){
  if(!running)return;
 
- let name="";
- let attempts=0;
+ let name="",attempts=0;
  do{
   name=makeUsername(Number(document.getElementById("length").value));
   attempts++;
@@ -147,11 +146,10 @@ function generate(){
  const copy=document.createElement("button");
  copy.className="copy";
  copy.textContent="نسخ";
-
  copy.onclick=async()=>{
   try{
    await navigator.clipboard.writeText(name);
-  }catch(error){
+  }catch(e){
    const area=document.createElement("textarea");
    area.value=name;
    document.body.appendChild(area);
@@ -176,10 +174,7 @@ function generate(){
 
 function stopGenerating(){
  running=false;
- if(timer){
-  clearInterval(timer);
-  timer=null;
- }
+ if(timer){clearInterval(timer);timer=null;}
  state.textContent="متوقف";
  startBtn.disabled=false;
 }
