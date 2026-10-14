@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>خميعات لليوزرات</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#09090d;color:#fff;font-family:Arial,sans-serif;padding:25px 14px}
+.container{width:100%;max-width:850px;margin:35px auto;background:#14141c;border:1px solid #292936;border-radius:22px;padding:28px}
+header{text-align:center;margin-bottom:28px}
+h1{font-size:30px;margin:0 0 12px}
+p{color:#aaa;line-height:1.8}
+.badge{display:inline-block;background:#252532;color:#bbb;border-radius:20px;padding:8px 14px;font-size:12px}
+label{display:block;margin:18px 0 10px;font-weight:bold}
+select,button{font-size:16px;border-radius:12px;padding:14px;border:1px solid #333;background:#20202b;color:white;width:100%}
+.buttons{display:flex;gap:12px;margin-top:15px}
+button{cursor:pointer;font-weight:bold}
+.start{background:#fff;color:#111;border-color:#fff}
+.stop{background:#302029;color:#ff8c9b}
+.stats{display:flex;justify-content:space-between;gap:10px;margin:24px 0;color:#aaa}
+#results{display:grid;gap:10px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#20202a;padding:14px;border-radius:12px;direction:ltr}
+.username{font-weight:bold;font-size:18px;overflow-wrap:anywhere}
+.copy{width:auto;padding:9px 13px;font-size:13px}
+.status{color:#aaa;font-size:12px;margin-top:5px}
+footer{text-align:center;color:#888;font-size:12px;margin-top:25px;line-height:1.8}
+@media(max-width:480px){.container{padding:18px;margin:12px auto}h1{font-size:25px}.buttons{gap:8px}.item{padding:10px}.username{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>خميعات لليوزرات</h1>
+<p>ولّد اقتراحات يوزرات تيك توك بسهولة ✨</p>
+<span class="badge">USERNAME GENERATOR</span>
+</header>
+<label for="length">طول اليوزر</label>
+<select id="length">
+<option value="3">3 خانات</option>
+<option value="4" selected>4 خانات</option>
+<option value="5">5 خانات</option>
+</select>
+<div class="buttons">
+<button class="start" id="start">START GENERATING</button>
+<button class="stop" id="stop">STOP</button>
+</div>
+<div class="stats">
+<span>الاقتراحات: <b id="count">0</b></span>
+<span id="state">متوقف</span>
+</div>
+<div id="results"></div>
+<footer>التوفر غير معروف — الأداة تولّد اقتراحات فقط ولا تتحقق من توفر اليوزر في تيك توك.</footer>
+</div>
+<script>
+const chars="abcdefghijklmnopqrstuvwxyz0123456789._";
+const results=document.getElementById("results");
+const count=document.getElementById("count");
+const state=document.getElementById("state");
+let running=false,timer=null,total=0;
+const used=new Set();
+function makeUsername(n){
+let s="";
+for(let i=0;i<n;i++)s+=chars[Math.floor(Math.random()*chars.length)];
+return s;
+}
+function generate(){
+let attempts=0;
+while(attempts<100){
+attempts++;
+const name=makeUsername(Number(document.getElementById("length").value));
+if(used.has(name))continue;
+used.add(name);total++;
+const item=document.createElement("div");item.className="item";
+const info=document.createElement("div");
+const username=document.createElement("div");username.className="username";username.textContent="@"+name;
+const status=document.createElement("div");status.className="status";status.textContent="التوفر غير معروف";
+info.append(username,status);
+const copy=document.createElement("button");copy.className="copy";copy.textContent="نسخ";
+copy.onclick=async()=>{
+try{await navigator.clipboard.writeText(name);}
+catch(e){
+const area=document.createElement("textarea");area.value=name;document.body.appendChild(area);area.select();document.execCommand("copy");area.remove();
+}
+copy.textContent="تم النسخ ✓";setTimeout(()=>copy.textContent="نسخ",1200);
+};
+item.append(info,copy);results.prepend(item);count.textContent=total;
+while(results.children.length>100)results.lastElementChild.remove();
+return;
+}
+stopGenerating();state.textContent="جرّب طولًا آخر";
+}
+function stopGenerating(){
+running=false;if(timer){clearInterval(timer);timer=null;}state.textContent="متوقف";
+}
+document.getElementById("start").onclick=()=>{
+if(running)return;running=true;state.textContent="يولّد الآن...";generate();timer=setInterval(generate,700);
+};
+document.getElementById("stop").onclick=stopGenerating;
+</script>
+</body>
+</html>
