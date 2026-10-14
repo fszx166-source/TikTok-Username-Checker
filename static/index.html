@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -23,7 +24,10 @@ button{cursor:pointer;font-weight:bold}
 .item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#20202a;padding:14px;border-radius:12px;direction:ltr}
 .username{font-weight:bold;font-size:18px;overflow-wrap:anywhere}
 .copy{width:auto;padding:9px 13px;font-size:13px}
-.status{color:#aaa;font-size:12px;margin-top:5px}
+.status{font-size:12px;margin-top:5px;direction:rtl}
+.good{color:#55e69a}
+.bad{color:#ff7185}
+.unknown{color:#ffce75}
 footer{text-align:center;color:#888;font-size:12px;margin-top:25px;line-height:1.8}
 @media(max-width:480px){.container{padding:18px;margin:12px auto}h1{font-size:25px}.buttons{gap:8px}.item{padding:10px}.username{font-size:16px}}
 </style>
@@ -32,70 +36,163 @@ footer{text-align:center;color:#888;font-size:12px;margin-top:25px;line-height:1
 <div class="container">
 <header>
 <h1>خميعات لليوزرات</h1>
-<p>ولّد اقتراحات يوزرات تيك توك بسهولة ✨</p>
-<span class="badge">USERNAME GENERATOR</span>
+<p>ولّد اقتراحات يوزرات تيك توك وافحصها ✨</p>
+<span class="badge">USERNAME GENERATOR + CHECKER</span>
 </header>
+
 <label for="length">طول اليوزر</label>
 <select id="length">
 <option value="3">3 خانات</option>
 <option value="4" selected>4 خانات</option>
 <option value="5">5 خانات</option>
 </select>
+
 <div class="buttons">
-<button class="start" id="start">START GENERATING</button>
-<button class="stop" id="stop">STOP</button>
+<button class="start" id="start">بدء التوليد والفحص</button>
+<button class="stop" id="stop">إيقاف</button>
 </div>
+
 <div class="stats">
 <span>الاقتراحات: <b id="count">0</b></span>
 <span id="state">متوقف</span>
 </div>
+
 <div id="results"></div>
-<footer>التوفر غير معروف — الأداة تولّد اقتراحات فقط ولا تتحقق من توفر اليوزر في تيك توك.</footer>
+
+<footer>
+✔️ الحساب موجود وفق بيانات صفحة تيك توك.
+<br>
+❌ لم يتم تأكيد وجود الحساب، وهذا لا يعني أنه متاح.
+<br>
+⚠️ قد يمنع تيك توك الفحص؛ النتائج ليست ضمانًا للتوفر.
+</footer>
 </div>
+
 <script>
 const chars="abcdefghijklmnopqrstuvwxyz0123456789._";
 const results=document.getElementById("results");
 const count=document.getElementById("count");
 const state=document.getElementById("state");
-let running=false,timer=null,total=0;
+const startBtn=document.getElementById("start");
+
+let running=false;
+let timer=null;
+let total=0;
 const used=new Set();
+
 function makeUsername(n){
-let s="";
-for(let i=0;i<n;i++)s+=chars[Math.floor(Math.random()*chars.length)];
-return s;
+ let s="";
+ for(let i=0;i<n;i++){
+  s+=chars[Math.floor(Math.random()*chars.length)];
+ }
+ return s;
 }
+
+async function checkUsername(name,status){
+ status.className="status unknown";
+ status.textContent="⏳ جارٍ الفحص...";
+ try{
+  const response=await fetch("/api/check?username="+encodeURIComponent(name));
+  const data=await response.json();
+
+  if(data.status==="taken"){
+   status.className="status good";
+   status.textContent="✔️ الحساب موجود";
+  }else if(data.status==="invalid"){
+   status.className="status bad";
+   status.textContent="❌ صيغة غير صحيحة";
+  }else{
+   status.className="status unknown";
+   status.textContent="⚠️ تعذّر التأكد من التوفر";
+  }
+ }catch(error){
+  status.className="status unknown";
+  status.textContent="⚠️ تعذّر الاتصال بالفحص";
+ }
+}
+
 function generate(){
-let attempts=0;
-while(attempts<100){
-attempts++;
-const name=makeUsername(Number(document.getElementById("length").value));
-if(used.has(name))continue;
-used.add(name);total++;
-const item=document.createElement("div");item.className="item";
-const info=document.createElement("div");
-const username=document.createElement("div");username.className="username";username.textContent="@"+name;
-const status=document.createElement("div");status.className="status";status.textContent="التوفر غير معروف";
-info.append(username,status);
-const copy=document.createElement("button");copy.className="copy";copy.textContent="نسخ";
-copy.onclick=async()=>{
-try{await navigator.clipboard.writeText(name);}
-catch(e){
-const area=document.createElement("textarea");area.value=name;document.body.appendChild(area);area.select();document.execCommand("copy");area.remove();
+ if(!running)return;
+
+ let name="";
+ let attempts=0;
+ do{
+  name=makeUsername(Number(document.getElementById("length").value));
+  attempts++;
+ }while(used.has(name)&&attempts<100);
+
+ if(used.has(name)){
+  stopGenerating();
+  state.textContent="جرّب طولًا آخر";
+  return;
+ }
+
+ used.add(name);
+ total++;
+
+ const item=document.createElement("div");
+ item.className="item";
+
+ const info=document.createElement("div");
+ const username=document.createElement("div");
+ username.className="username";
+ username.textContent="@"+name;
+
+ const status=document.createElement("div");
+ status.className="status unknown";
+ status.textContent="بانتظار الفحص";
+
+ info.append(username,status);
+
+ const copy=document.createElement("button");
+ copy.className="copy";
+ copy.textContent="نسخ";
+
+ copy.onclick=async()=>{
+  try{
+   await navigator.clipboard.writeText(name);
+  }catch(error){
+   const area=document.createElement("textarea");
+   area.value=name;
+   document.body.appendChild(area);
+   area.select();
+   document.execCommand("copy");
+   area.remove();
+  }
+  copy.textContent="تم النسخ ✓";
+  setTimeout(()=>copy.textContent="نسخ",1200);
+ };
+
+ item.append(info,copy);
+ results.prepend(item);
+ count.textContent=total;
+
+ while(results.children.length>100){
+  results.lastElementChild.remove();
+ }
+
+ checkUsername(name,status);
 }
-copy.textContent="تم النسخ ✓";setTimeout(()=>copy.textContent="نسخ",1200);
-};
-item.append(info,copy);results.prepend(item);count.textContent=total;
-while(results.children.length>100)results.lastElementChild.remove();
-return;
-}
-stopGenerating();state.textContent="جرّب طولًا آخر";
-}
+
 function stopGenerating(){
-running=false;if(timer){clearInterval(timer);timer=null;}state.textContent="متوقف";
+ running=false;
+ if(timer){
+  clearInterval(timer);
+  timer=null;
+ }
+ state.textContent="متوقف";
+ startBtn.disabled=false;
 }
-document.getElementById("start").onclick=()=>{
-if(running)return;running=true;state.textContent="يولّد الآن...";generate();timer=setInterval(generate,700);
+
+startBtn.onclick=()=>{
+ if(running)return;
+ running=true;
+ state.textContent="يولّد ويفحص...";
+ startBtn.disabled=true;
+ generate();
+ timer=setInterval(generate,3000);
 };
+
 document.getElementById("stop").onclick=stopGenerating;
 </script>
 </body>
