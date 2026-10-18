@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>خميعات لليوزرات</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080808;color:#fff;font-family:Arial,sans-serif;padding:24px 14px}
+main{max-width:650px;margin:auto}
+header{text-align:center;padding:30px 10px}
+h1{font-size:30px}
+p{color:#aaa;line-height:1.8}
+.panel{background:#111;border:1px solid #292929;border-radius:18px;padding:20px;margin:16px 0}
+select{width:100%;padding:14px;margin:10px 0;background:#080808;color:white;border:1px solid #333;border-radius:10px;font-size:16px}
+button{border:0;border-radius:10px;padding:13px;background:#fff;color:#111;font-weight:bold;font-size:15px}
+.buttons{display:flex;gap:10px;margin-top:14px}
+.buttons button{flex:1}
+.secondary{background:#252525;color:white}
+#results{display:grid;gap:8px;margin-top:14px}
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px;background:#191919;border:1px solid #303030;border-radius:10px;overflow-wrap:anywhere}
+.item button{padding:9px;font-size:12px}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div style="font-size:42px">⚡</div>
+<h1>خميعات لليوزرات</h1>
+<p>ولّد يوزرات جديدة وانسخها بسهولة</p>
+</header>
+<section class="panel">
+<label for="amount">عدد اليوزرات</label>
+<select id="amount">
+<option value="10">10 يوزرات</option>
+<option value="25">25 يوزر</option>
+<option value="50" selected>50 يوزر</option>
+<option value="100">100 يوزر</option>
+</select>
+<label for="type">نوع اليوزر</label>
+<select id="type">
+<option value="mix">حروف وأرقام</option>
+<option value="short">قصير</option>
+<option value="under">مع شرطة سفلية</option>
+</select>
+<div class="buttons">
+<button onclick="generate()">توليد اليوزرات</button>
+<button class="secondary" onclick="clearAll()">مسح</button>
+</div>
+<p id="count">عدد النتائج: 0</p>
+<div id="results"></div>
+<div class="buttons">
+<button class="secondary" onclick="copyAll()">نسخ الكل</button>
+<button class="secondary" onclick="downloadList()">حفظ ملف</button>
+</div>
+<p style="font-size:12px">الأسماء اقتراحات فقط، وليست تأكيدًا لتوفرها في تيك توك.</p>
+</section>
+<footer style="text-align:center;color:#777">خميعات لليوزرات ©</footer>
+</main>
+<script>
+let names=[];
+function rand(chars,n){
+ let s="";
+ for(let i=0;i<n;i++)s+=chars[Math.floor(Math.random()*chars.length)];
+ return s;
+}
+function makeName(type){
+ const letters="abcdefghijklmnopqrstuvwxyz";
+ const digits="0123456789";
+ if(type==="short")return rand(letters,3)+rand(digits,2);
+ if(type==="under")return rand(letters,3)+"_"+rand(digits,2);
+ return rand(letters,2)+rand(letters+digits,4);
+}
+function generate(){
+ const amount=Number(document.getElementById("amount").value);
+ const type=document.getElementById("type").value;
+ const set=new Set();
+ while(set.size<amount)set.add(makeName(type));
+ names=[...set];
+ const results=document.getElementById("results");
+ results.replaceChildren();
+ names.forEach(name=>{
+  const row=document.createElement("div");
+  row.className="item";
+  const label=document.createElement("span");
+  label.textContent="@"+name;
+  const btn=document.createElement("button");
+  btn.textContent="نسخ";
+  btn.onclick=async()=>{
+   try{await navigator.clipboard.writeText(name);btn.textContent="تم ✓";}
+   catch(e){prompt("انسخ اليوزر:",name);}
+  };
+  row.append(label,btn);
+  results.appendChild(row);
+ });
+ document.getElementById("count").textContent="عدد النتائج: "+names.length;
+}
+async function copyAll(){
+ if(!names.length){alert("ولّد يوزرات أولًا");return;}
+ const text=names.join("\n");
+ try{await navigator.clipboard.writeText(text);alert("تم النسخ");}
+ catch(e){prompt("انسخ اليوزرات:",text);}
+}
+function downloadList(){
+ if(!names.length){alert("ولّد يوزرات أولًا");return;}
+ const blob=new Blob([names.join("\n")],{type:"text/plain;charset=utf-8"});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="Khumaiat-Usernames.txt";
+ a.click();
+ URL.revokeObjectURL(a.href);
+}
+function clearAll(){
+ names=[];
+ document.getElementById("results").replaceChildren();
+ document.getElementById("count").textContent="عدد النتائج: 0";
+}
+</script>
+</body>
+</html>
